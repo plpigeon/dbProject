@@ -1,1 +1,0 @@
-(defparameter *path* "~/Documents/dbProject/")
