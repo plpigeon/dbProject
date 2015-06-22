@@ -1,0 +1,187 @@
+/*--------------------------------------------------------------------------
+   
+	Database
+
+	0. YUI Library is used for CSS reset (http://yuilibrary.com/yui/docs/cssreset/)
+	1. Body
+	2. Typography
+	3. Form Sections
+		3.1. Standard header
+		3.2. Standard display
+		3.3. Standard remove
+		3.4. Standard input
+
+
+--------------------------------------------------------------------------*/
+
+/*--------------------------------------------------------------------------
+	1. Body
+--------------------------------------------------------------------------*/
+
+body {
+	color: #333;
+	background: #fff;
+	font: normal 16px/28px 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
+	-webkit-font-smoothing: antialiased; /* Fix for webkit rendering */
+	-webkit-text-size-adjust: 100%;
+}
+
+
+
+/*--------------------------------------------------------------------------
+	2. Typography
+--------------------------------------------------------------------------*/
+
+/* Links */
+a, a:visited { color: #333; text-decoration: none; outline: 0; }
+a:hover, a:focus { color: #000; }
+p a, p a:visited { line-height: inherit; }
+
+/* Font stylings */
+em { font-style: italic; }
+strong { font-weight: bold; }
+small { font-size: 80%; }
+
+
+
+/*--------------------------------------------------------------------------
+	3. Sections
+--------------------------------------------------------------------------*/
+
+/* Common elements */
+
+h2 { 
+	font: bold 36px/48px 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
+	text-transform: uppercase;
+}
+
+p.desc {
+	font: normal 14px/26px 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.font-color-white {
+	color: #fff;
+}
+
+/* Colors - Underline */
+.underline-color-primary {
+	border-bottom: 1px solid #dd3333;
+}
+
+img { max-width: 100%; }
+
+
+
+	/*---------------------------------------------------
+		3.1 Standard header
+	---------------------------------------------------*/
+
+	#section-standard-header {
+		height: 40px;
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		z-index: 10000;
+		overflow: visible;
+		font: normal normal 16px/24px 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
+	}
+
+	#section-standard-header-inner {
+		background: url('../images/alpha/bg_alpha50.png');
+	}
+
+		#section-standard-header a {
+		  color: #fff;
+		}
+
+	.selectnav { display: none; }
+
+
+	#section-standard-header ul#nav {
+		display: block;
+		float: right;
+		position: relative;
+		margin: 0;
+	}
+
+	#section-standard-header ul#nav > li {
+		display: block;
+		float: left;
+	}
+
+
+	#section-standard-header ul#nav a {
+	  display: block;
+	  padding: 10px 20px 15px 20px;
+	  font: normal 11px/18px 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
+	  text-decoration: none;
+	}
+
+		#section-standard-header ul#nav a {
+			border-top: 3px solid #000;
+		}
+
+		#section-standard-header ul#nav a:hover {
+		  border-top: 3px solid #dd3333;
+		  text-decoration: none;
+		}
+
+		#section-standard-header ul#nav .active a {
+			border-top: 3px solid #dd3333;
+		}
+
+
+
+	/*---------------------------------------------------
+		3.2 Standard display
+	---------------------------------------------------*/
+	
+	#section-standard-display {
+		background: #dd3333;
+		padding: 60px 0 30px 0;
+	}
+
+		#section-standard-display p.desc {
+			font: normal 16px/26px 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
+			color: #fff;
+			margin-bottom: 30px;
+		}
+
+		#section-standard-display p {
+			color: #fff;
+			font: normal 18px/30px 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
+			margin-bottom: 30px;
+		}
+
+		#section-standard-display img {
+			margin-bottom: 30px;
+		}
+
+
+	/*---------------------------------------------------
+		3.3 Standard remove
+	---------------------------------------------------*/
+
+	#section-standard-remove {
+		background: #dd3333;
+		padding: 60px 0 30px 0;
+	}
+
+		#section-standard-remove p.desc {
+			font: normal 16px/26px 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
+			color: #fff;
+			margin-bottom: 30px;
+		}
+
+		#section-standard-remove p {
+			color: #fff;
+			font: normal 18px/30px 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
+			margin-bottom: 30px;
+		}
+
+		#section-standard-remove img {
+			margin-bottom: 30px;
+		}
+
+
