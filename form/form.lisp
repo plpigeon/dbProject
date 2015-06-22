@@ -145,6 +145,7 @@
 ;;;---------------------------------------
 ;;; Standard display
 ;;;---------------------------------------
+;; Utiliser iframes pour générer une page
 (defun standard-page-display (table)
   (let* ((tab (printable-table table))
          (header (standard-page-display-header (car tab)))
