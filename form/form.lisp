@@ -74,15 +74,15 @@
        (insert-row param table)
        (redirect (standard-page-name table)))))
 
-;(defun standard-table-remover (table)
-;  (lambda ()
-;     (let* ((id-column (car (schema table)))
-;            (pair (car (post-parameters*)))
-;            (id (funcall (value-converter id-column) (cdr pair) id-column)))  
-;       (print "*********************")
-;       (print id)
-;       (delete-row id table)
-;       (redirect (standard-page-name table)))))
+(defun standard-table-remover (table)
+  (lambda ()
+     (let* ((id-column (car (schema table)))
+            (pair (car (post-parameters*)))
+            (id (funcall (value-converter id-column) (cdr pair) id-column)))  
+       (print "*********************")
+       (print id)
+       (delete-rows table (matching table (primary-key table) id))
+       (redirect (standard-page-name table)))))
 
 
 ;;;---------------------------------------
@@ -94,11 +94,11 @@
                         `(defun ,(intern (standard-name-adder table)) ()
                            (funcall ,(standard-table-adder table))))
                     *db*))
-        ;(fn-remover (mapcar
-        ;            #'(lambda (table)
-        ;                `(defun ,(intern (standard-name-remover table)) ()
-        ;                   (funcall ,(standard-table-remover table))))
-        ;            *db*))
+        (fn-remover (mapcar
+                    #'(lambda (table)
+                        `(defun ,(intern (standard-name-remover table)) ()
+                           (funcall ,(standard-table-remover table))))
+                    *db*))
         (fn-viewer (mapcar
                      #'(lambda (table)
                          `(defun ,(intern (standard-name table)) ()
@@ -110,7 +110,7 @@
                        *db*)))   
     `(progn
        ,@fn-adder
-       ;,@fn-remover
+       ,@fn-remover
        ,@fn-viewer
        ,@dispatcher)))
 
@@ -119,7 +119,7 @@
     (let ((header (standard-page-header))
           (display (standard-page-display table))
           (input (standard-page-input-form table))
-          ;(remov (standard-page-remove-form table))
+          (remov (standard-page-remove-form table))
           )
       `(with-html-output-to-string (*standard-output* nil :prologue t :indent t)
          (:head (:title ,(standard-name table)))
@@ -127,7 +127,7 @@
            ,@header
            ,@display
            ,@input
-           ;,@remov
+           ,@remov
            )))))
 
 
@@ -170,26 +170,31 @@
 ;;;---------------------------------------
 ;;; Standard remove
 ;;;---------------------------------------
-;(defun standard-page-remove-form (table)
-;  (let ((field (remove-field table))
-;        (page-name (standard-page-name-remover table)))
-;    `((:h3 "Suppression")
-;      (:form :action ,page-name :method "post"
-;            ,field
-;            (:p (:input :type "submit"
-;                        :value "Remove")))
-;      (:hr))))
+(defun standard-page-remove-form (table)
+  (if (primary-key table)
+    (let ((field (remove-field table))
+          (page-name (standard-page-name-remover table)))
+      `((:h3 "Suppression")
+        (:form :action ,page-name :method "post"
+              ,field
+              (:p (:input :type "submit"
+                          :value "Remove")))
+        (:hr)))
+    `((:h3 "Suppression")
+      (:p "Suppression : not yet supported for table without a primary-key")
+      (:hr))))
 
-;(defun remove-field (table)
-;  (let ((options (mapcar
-;                  #'(lambda (row) `(:option :value ,(write-to-string (getf row :id)) ,(write-to-string (getf row :id))))
-;                  (rows table)))
-;        (name  (format nil "~(~a~)" (table-name table))))
-;    `(:p "ID" (:br)
-;         (:select :name ,name
-;                  :required "0"
-;                  (:option :value "" "Please select")
-;                  ,@options))))
+(defun remove-field (table)
+  (let* ((rows (select :columns (primary-key table) :from table :raw t :no-tag t))
+         (options (mapcar
+                   #'(lambda (row) `(:option :value ,(write-to-string row) ,(write-to-string row)))
+                   rows))
+         (name  (format nil "~(~a~)" (table-name table))))
+    `(:p "ID" (:br)
+         (:select :name ,name
+                  :required "0"
+                  (:option :value "" "Please select")
+                  ,@options))))
 
 
 ;;;---------------------------------------

@@ -16,15 +16,19 @@
     (:phone integer t)))
 
 (defparameter *order-schema-descriptor* 
-  '((:date integer nil)
+  '((:id integer nil)
+    (:date integer nil)
     (:person key nil :column-key-table :person :column-key-ref :name)))
 
+(defparameter *test-schema-descriptor* 
+  '((:name string nil)))
 
 ;;;---------------------------------------
 ;;; Load database
 ;;;---------------------------------------
 (defparameter *db* `(,(make-table :person *person-schema-descriptor* :primary-key :idPerson)
-                     ,(make-table :order *order-schema-descriptor*)))
+                     ,(make-table :order *order-schema-descriptor* :primary-key :id)
+                     ,(make-table :test *test-schema-descriptor* )))
 
 (define-tables)
 
@@ -39,6 +43,8 @@
 (insert-row '(:date 33 :person 3) *order*)
 (insert-row '(:date 44 :person 4) *order*)
 (insert-row '(:date 55 :person 5) *order*)
+(insert-row '(:name "test") *test*)
+(insert-row '(:name "test1") *test*)
 
 ;(loop 
 ;  for i from 1 to 10000
