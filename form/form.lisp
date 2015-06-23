@@ -52,6 +52,22 @@
 
 
 ;;;---------------------------------------
+;;; Other fonction
+;;;---------------------------------------
+(defun build-list-parameters (param table)
+  (loop
+    for pair in param
+    for tag = (intern (format nil "~:@(~a~)" (car pair)) "KEYWORD")
+    for column = (find-column tag (schema table))
+    for val = (funcall
+                 (value-converter column)
+                 (cdr pair)
+                 column)
+    collect tag
+    collect val))
+
+
+;;;---------------------------------------
 ;;; Dispatchers
 ;;;---------------------------------------
 (defun standard-table-dispatcher (table)
@@ -67,17 +83,7 @@
 
 (defun standard-table-adder (table)
   (lambda ()
-     (let ((param ;(post-parameters*)))
-             (loop
-               for pair in (post-parameters*);'(("name" . "test") ("phone" . "3"))
-               for tag = (intern (format nil "~:@(~a~)" (car pair)) "KEYWORD")
-               for column = (find-column tag (schema table))
-               for val = (funcall
-                            (value-converter column)
-                            (cdr pair)
-                            column)
-               collect tag
-               collect val)))
+     (let ((param (build-list-parameters (post-parameters*) table)))
        (print param)
        (insert-row param table)
        (redirect (standard-page-name table)))))
@@ -111,6 +117,8 @@
                         #'(lambda (table)
                            `(defun ,(intern (standard-name-displayer table)) ()
                                (eval (funcall ,(standard-table-page-displayer table)))))
+                        ;*** En fait, garder le modèle actuel, mais prendre le temps de lire les paremetre POST
+                        ;       pour générer le where et la page
                         *db*))
         (fn-viewer (mapcar
                      #'(lambda (table)
@@ -315,10 +323,17 @@
 ;;;---------------------------------------
 (defun standard-table-page-displayer (table)
   (lambda ()
-    (let ((temp "test"))
+    (let* ((param (build-list-parameters (get-parameters*) table))
+           (fn-match `(matching ,table ,@param)))
+      (print param)
+      (print fn-match)
       `(with-html-output-to-string (*standard-output* nil :prologue t :indent t)
          (:head (:title ,(standard-name table)))
          (:body
            (:p "test de display")
            )))))
+
+
+
+
 
