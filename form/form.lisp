@@ -136,13 +136,30 @@
           (remov (standard-page-remove-form table))
           )
       `(with-html-output-to-string (*standard-output* nil :prologue t :indent t)
-         (:head (:title ,(standard-name table)))
+         (:head (:title ,(standard-name table))
+          ; Load les fichier css
+         (:link :type "text/css" 
+                :rel "stylesheet"
+                :href "../css/grid.css")
+         (:link :type "text/css" 
+                :rel "stylesheet"
+                :href "../css/style.css")
+         (:link :type "text/css" 
+                :rel "stylesheet"
+                :href "../css/alpha_background.css")
+         (:link :type "text/css"
+                :href "http://fonts.googleapis.com/css?family=PT+Serif:400,700,400italic,700italic|Open+Sans:400italic,700italic,400,700"
+                :rel "stylesheet"))
          (:body
            ,@header
            ,@display
            ,@input
            ,@remov
-           )))))
+           )
+        )
+    )
+  )
+)
 
 
 ;;;---------------------------------------
@@ -152,8 +169,29 @@
   (let* ((name (mapcar #'standard-name *db*))
          (url (mapcar #'standard-page-name *db*))
          (link (mapcar  #'(lambda (name url) `(:a :href ,url ,name)) name url)))
+
+;  (:div :id "section-standard-header"
+;    (:div :id "section-standard-header-inner"
+;      (:div :class "container"
+;        (:div :class "sixteen columns"
+;            (:ul :id "nav" :class "nav"
+;              (:li :class "menu-item" (nth 0 link))
+;              (:li :class "menu-item" (nth 1 link))
+;              (:li :class "menu-item" (nth 2 link))
+;              (:li :class "menu-item" (nth 3 link))
+;              (:li :class "menu-item" (nth 4 link))
+;              (:li :class "menu-item" (nth 5 link))
+;            )
+;          (:div :class "clear")
+;        )
+;      )
+;      (:div :class "clear")
+;    )
+;  )
     `(,@link
-      (:hr))))
+      (:hr))
+  )
+)
 
 
 ;;;---------------------------------------
