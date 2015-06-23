@@ -141,7 +141,7 @@
 (defun standard-table-page (table)
   (lambda ()
     (let ((header (standard-page-header))
-          (display (standard-page-display-test table))
+          (display (standard-page-display table))
           (input (standard-page-input-form table))
           (remov (standard-page-remove-form table))
           )
@@ -207,14 +207,19 @@
 ;;;---------------------------------------
 ;;; Standard display
 ;;;---------------------------------------
-;; Utiliser iframes pour générer une page
 (defun standard-page-display (table)
   (let* ((tab (printable-table table))
          (header (standard-page-display-header (car tab)))
          (rows (mapcar
                  #'(lambda (row) (standard-page-display-row row (table-headers table)))
-                 (cdr tab))))
-    `((:table ,header ,@rows)
+                 (cdr tab)))
+         (page-name (standard-page-name-displayer table))
+         (frame-name "display-frame")
+         (inputs (mapcar #'display-field (schema table))))
+    `((:iframe :name ,frame-name :width "600" :heigth "300" :src ,page-name)
+      (:form :action ,page-name :method "get" :target ,frame-name
+             ,@inputs
+             (:p (:input :type "submit" :value "Search")))
       (:hr))))
 
 (defun standard-page-display-header (headers)
@@ -319,9 +324,8 @@
       rows)))
 
 
-
 ;;;---------------------------------------
-;;; Standard displayer
+;;; Standard page displayer
 ;;;---------------------------------------
 (defun standard-table-page-displayer (table)
   (lambda ()
@@ -345,20 +349,6 @@
     `(:p ,name (:br)
          ,input)))
 
-(defun standard-page-display-test (table)
-  (let* ((tab (printable-table table))
-         (header (standard-page-display-header (car tab)))
-         (rows (mapcar
-                 #'(lambda (row) (standard-page-display-row row (table-headers table)))
-                 (cdr tab)))
-         (page-name (standard-page-name-displayer table))
-         (frame-name "display-frame")
-         (inputs (mapcar #'display-field (schema table))))
-    `((:iframe :name ,frame-name :width "600" :heigth "300" :src ,page-name)
-      (:form :action ,page-name :method "get" :target ,frame-name
-             ,@inputs
-             (:p (:input :type "submit" :value "Search")))
-      (:hr))))
 
 
 
