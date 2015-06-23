@@ -59,12 +59,14 @@
     for pair in param
     for tag = (intern (format nil "~:@(~a~)" (car pair)) "KEYWORD")
     for column = (find-column tag (schema table))
-    for val = (funcall
-                 (value-converter column)
-                 (cdr pair)
-                 column)
-    collect tag
-    collect val))
+    for val = (if (equal "" (cdr pair))
+                ""
+                (funcall
+                  (value-converter column)
+                  (cdr pair)
+                  column))
+    when (not (equal val "")) collect tag
+    when (not (equal val "")) collect val))
 
 
 ;;;---------------------------------------
@@ -139,7 +141,7 @@
 (defun standard-table-page (table)
   (lambda ()
     (let ((header (standard-page-header))
-          (display (standard-page-display table))
+          (display (standard-page-display-test table))
           (input (standard-page-input-form table))
           (remov (standard-page-remove-form table))
           )
@@ -274,13 +276,13 @@
 
 (defun input-field (column)
   (let ((name (symbol-name (column-name column)))
-        (input (input-type-and-attribute column)))
+        (input (input-type-and-attribute column :include-nullable t)))
     `(:p ,name (:br)
          ,input)))
 
-(defun input-type-and-attribute (column)
+(defun input-type-and-attribute (column &key (include-nullable nil))
   (let ((type (value-normalizer column))
-        (null (if (not (nullable column))
+        (null (if (and include-nullable (not (nullable column)))
                 '(:required "0")
                 '()))
         (name  (format nil "~(~a~)" (column-name column))))
@@ -324,14 +326,39 @@
 (defun standard-table-page-displayer (table)
   (lambda ()
     (let* ((param (build-list-parameters (get-parameters*) table))
-           (fn-match `(matching ,table ,@param)))
+           (fn-match `(matching ,table ,@param))
+           (tab (printable-table (select :from table :where (eval fn-match))))
+           (header (standard-page-display-header (car tab)))
+           (rows (mapcar
+                   #'(lambda (row) (standard-page-display-row row (table-headers table)))
+                   (cdr tab))))
       (print param)
-      (print fn-match)
+      (print tab)
       `(with-html-output-to-string (*standard-output* nil :prologue t :indent t)
          (:head (:title ,(standard-name table)))
          (:body
-           (:p "test de display")
-           )))))
+           (:table ,header ,@rows))))))
+
+(defun display-field (column)
+  (let ((name (symbol-name (column-name column)))
+        (input (input-type-and-attribute column)))
+    `(:p ,name (:br)
+         ,input)))
+
+(defun standard-page-display-test (table)
+  (let* ((tab (printable-table table))
+         (header (standard-page-display-header (car tab)))
+         (rows (mapcar
+                 #'(lambda (row) (standard-page-display-row row (table-headers table)))
+                 (cdr tab)))
+         (page-name (standard-page-name-displayer table))
+         (frame-name "display-frame")
+         (inputs (mapcar #'display-field (schema table))))
+    `((:iframe :name ,frame-name :width "600" :heigth "300" :src ,page-name)
+      (:form :action ,page-name :method "get" :target ,frame-name
+             ,@inputs
+             (:p (:input :type "submit" :value "Search")))
+      (:hr))))
 
 
 
