@@ -70,14 +70,14 @@
      :reader schema-descriptor
      :initarg :schema-descriptor
      :initform (error "must provide a schema descriptor"))
-   (row-normalizer
-    :reader row-normalizer
-    :initarg :row-normalizer
-    :initform #'default-row-normalizer)
    (primary-key
      :reader primary-key
      :initarg :primary-key
      :initform nil)
+   (unique-keys
+     :reader unique-keys
+     :initarg :unique-keys
+     :initform '())
    (index
      :accessor table-index
      :initarg :table-index
@@ -87,14 +87,23 @@
 ;;;---------------------------------------
 ;;; row-normalizer
 ;;;---------------------------------------
-(defun primary-key-normalizer (row table)
+(defun primary-key-normalizer (normalized-row table)
   (let ((id-field (list (primary-key table) (table-index table))))
-    (if (getf row (primary-key table))
+    (if (getf normalized-row (primary-key table))
       (error "It's not possible to declare yourself a PRIMARY-KEY")
-      (append row id-field))))
+      (append id-field normalized-row))))
 
-(defun default-row-normalizer (row table)
-  row)
+(defun unique-keys-normalizer (normalized-row table)
+  (let* ((unique-column
+           (loop
+             for key in (unique-keys table)
+             collect key
+             collect (getf normalized-row key)))
+         (rows (select :columns (unique-keys table) :from table :where (eval `(matching ,table ,@unique-column)) :raw t)))
+    (if rows
+      (error "Row ~a already exist in table ~a with unique keys" normalized-row (table-name table))
+      normalized-row)))
+
 
 ;;;---------------------------------------
 ;;; Column Class definition
@@ -177,17 +186,16 @@
 ;;;---------------------------------------
 ;;; Table constructors
 ;;;---------------------------------------
-(defun make-table (name schema-descriptor &key (primary-key nil) (rows nil))
-  (let ((row-normalizer (if primary-key #'primary-key-normalizer #'default-row-normalizer)))
-    (make-instance
-      'table
-      :name name
-      ;*** devra vérifier si les rows répondent au schema
-      :rows rows
-      :schema-descriptor schema-descriptor
-      :schema (make-schema schema-descriptor)
-      :row-normalizer row-normalizer
-      :primary-key primary-key)))
+(defun make-table (name schema-descriptor &key (primary-key nil) (unique-keys '()) (rows '()))
+  (make-instance
+    'table
+    :name name
+    ;*** devra vérifier si les rows répondent au schema
+    :rows rows
+    :schema-descriptor schema-descriptor
+    :schema (make-schema schema-descriptor)
+    :primary-key primary-key
+    :unique-keys unique-keys))
 
 ;(defun make-table-from-serialized-table (serialize-table)
 ;  (let* ((schema-descriptor (getf serialize-table :schema-descriptor))
@@ -272,7 +280,7 @@
      (if (typep value ,type)
           value
           (error "Column ~a must be of type ~a" (column-name column) ,type))
-        value))
+     value))
 
 (defun validate-key (value column)
   (let ((table (find-table (column-key-table column))))
@@ -297,24 +305,48 @@
 ;;; INSERT-ROW
 ;;;---------------------------------------
 (defun insert-row (names-and-values table)
-  (let ((names-values (funcall (row-normalizer table) names-and-values table)))
+  (let* ((normalized-row (normalize-row names-and-values table)))
     (with-accessors ((table-rows rows)) table
-      (setf table-rows (cons (normalize-row names-values (schema table)) (rows table))))
+      (setf table-rows (cons normalized-row (rows table)))) 
     (with-accessors ((id table-index)) table
       (incf id))))
 
-(defun normalize-row (names-and-values schema)
+(defun normalize-row (names-and-values table)
+  (let* ((row-values (normalize-row-values names-and-values table))
+         (row-prim (if (primary-key table)
+                     (normalize-row-primary-key row-values table)
+                     row-values))
+         (row-null (normalize-row-nullable row-prim (schema table)))
+         (row-uniq (if (unique-keys table)
+                     (normalize-row-unique-keys row-null table)
+                     row-null)))
+    row-uniq))
+
+(defun normalize-row-values (names-and-values table)
   (loop
-     for column in schema
+     for column in (remove-if #'(lambda (col) (eql (column-name col) (primary-key table))) (schema table))
      for name = (column-name column)
      for value = (or (getf names-and-values name) (default-value column))
      collect name
      collect (normalize-for-column value column)))
 
+(defun normalize-row-primary-key (normalized-row table)
+  (primary-key-normalizer normalized-row table))
+
+(defun normalize-row-unique-keys (normalized-row table)
+  (unique-keys-normalizer normalized-row table))
+
 (defun normalize-for-column (value column)
-  (if (not (nullable column))
-    (validate-not-nullable value column))
   (funcall (value-normalizer column) value column))
+
+(defun normalize-row-nullable (normalized-row schema)
+  (loop
+    for column in schema
+    for name = (column-name column)
+    for value = (or (getf normalized-row name) (default-value column))
+    for validate = (if (not (nullable column))
+                     (validate-not-nullable value column)))
+  normalized-row)
 
 
 ;;;---------------------------------------
@@ -423,7 +455,7 @@
                                                          (getf row col))
                                            collect col
                                            collect value)
-                                         (schema table))
+                                         table)
                           row))
                     (rows table))))
     (with-accessors ((table-rows rows)) table
