@@ -35,6 +35,9 @@
 (defun standard-name-remover (table)
   (format nil "~:@(~a~)-REMOVER" (table-name table)))
 
+(defun standard-name-displayer (table)
+  (format nil "~:@(~a~)-DISPLAYER" (table-name table)))
+
 (defun standard-page-name (table)
   (format nil "/~(~a~)" (standard-name table)))
 
@@ -43,6 +46,9 @@
 
 (defun standard-page-name-remover (table)
   (format nil "/~(~a~)" (standard-name-remover table)))
+
+(defun standard-page-name-displayer (table)
+  (format nil "/~(~a~)" (standard-name-displayer table)))
 
 
 ;;;---------------------------------------
@@ -55,6 +61,8 @@
     (push (create-prefix-dispatcher (standard-page-name-adder table) (intern (standard-name-adder table)))
           *dispatch-table*)
     (push (create-prefix-dispatcher (standard-page-name-remover table) (intern (standard-name-remover table)))
+          *dispatch-table*)
+    (push (create-prefix-dispatcher (standard-page-name-displayer table) (intern (standard-name-displayer table)))
           *dispatch-table*)))
 
 (defun standard-table-adder (table)
@@ -99,6 +107,11 @@
                         `(defun ,(intern (standard-name-remover table)) ()
                            (funcall ,(standard-table-remover table))))
                     *db*))
+        (fn-displayer (mapcar
+                        #'(lambda (table)
+                           `(defun ,(intern (standard-name-displayer table)) ()
+                               (eval (funcall ,(standard-table-page-displayer table)))))
+                        *db*))
         (fn-viewer (mapcar
                      #'(lambda (table)
                          `(defun ,(intern (standard-name table)) ()
@@ -111,6 +124,7 @@
     `(progn
        ,@fn-adder
        ,@fn-remover
+       ,@fn-displayer
        ,@fn-viewer
        ,@dispatcher)))
 
@@ -257,4 +271,16 @@
       rows)))
 
 
+
+;;;---------------------------------------
+;;; Standard displayer
+;;;---------------------------------------
+(defun standard-table-page-displayer (table)
+  (lambda ()
+    (let ((temp "test"))
+      `(with-html-output-to-string (*standard-output* nil :prologue t :indent t)
+         (:head (:title ,(standard-name table)))
+         (:body
+           (:p "test de display")
+           )))))
 
