@@ -138,8 +138,19 @@ img { max-width: 100%; }
 	---------------------------------------------------*/
 	
 	#section-standard-display {
-		background: #dd3333;
+		background: #fff;
 		padding: 60px 0 30px 0;
+	}
+
+	#section-standard-display h3 {
+		display: center;
+		text-align: center;
+		font: bold 17px/28px 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
+		color: #dd3333;
+		background: #fff;
+		padding: 10px 15px;
+		text-transform: uppercase;
+		margin-bottom: 25px;
 	}
 
 		#section-standard-display p.desc {
@@ -160,6 +171,42 @@ img { max-width: 100%; }
 
 
 	/*---------------------------------------------------
+		3.3 Standard input
+	---------------------------------------------------*/
+
+	#section-standard-input {
+		background: #fff;
+		padding: 60px 0 30px 0;
+	}
+
+	#section-standard-input h3 {
+		display: center;
+		text-align: center;
+		font: bold 17px/28px 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
+		color: #dd3333;
+		background: #fff;
+		padding: 10px 15px;
+		text-transform: uppercase;
+		margin-bottom: 25px;
+	}
+
+		#section-standard-input p.desc {
+			font: normal 16px/26px 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
+			color: #fff;
+			margin-bottom: 30px;
+		}
+
+		#section-standard-input p {
+			color: #fff;
+			font: normal 18px/30px 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
+			margin-bottom: 30px;
+		}
+
+		#section-standard-input img {
+			margin-bottom: 30px;
+		}
+
+	/*---------------------------------------------------
 		3.3 Standard remove
 	---------------------------------------------------*/
 
@@ -167,7 +214,18 @@ img { max-width: 100%; }
 		background: #dd3333;
 		padding: 60px 0 30px 0;
 	}
-
+	
+	#section-standard-remove h3 {
+		display: center;
+		text-align: center;
+		font: bold 17px/28px 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
+		color: #dd3333;
+		background: #fff;
+		padding: 10px 15px;
+		text-transform: uppercase;
+		margin-bottom: 25px;
+	}
+	
 		#section-standard-remove p.desc {
 			font: normal 16px/26px 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
 			color: #fff;
@@ -183,5 +241,3 @@ img { max-width: 100%; }
 		#section-standard-remove img {
 			margin-bottom: 30px;
 		}
-
-

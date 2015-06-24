@@ -167,24 +167,22 @@
   )
 )
 
-;; (hunchentoot:start *server*)
-
 ;;;---------------------------------------
 ;;; Standard header
 ;;;---------------------------------------
 (defun standard-page-header ()
-  (let* ((name (mapcar #'standard-name *db*))
+  (let* (
+         (name (mapcar #'standard-name *db*))
          (url (mapcar #'standard-page-name *db*))
-         (link (mapcar  #'(lambda (name url) `(:a :href ,url ,name)) name url)))
+         (link (mapcar  #'(lambda (name url) `(:li :class "menu-item" (:a :href ,url ,name))) name url))
+        )
 
 `((:div :id "section-standard-header"
     (:div :id "section-standard-header-inner"
       (:div :class "container"
         (:div :class "sixteen columns"
             (:ul :id "nav" :class "nav"
-              (:li :class "menu-item" ,(nth 0 link))
-              (:li :class "menu-item" ,(nth 1 link))
-              (:li :class "menu-item" ,(nth 2 link))
+              ,@link
             )
           (:div :class "clear")
         ) ; // six
@@ -192,12 +190,10 @@
       (:div :class "clear")
     ) ; // div inner
   ) ; // div header
-  ) ; // `
-    `(,@link (:hr))
-  )
-)
+) ; // `
+))
 
-
+;; (hunchentoot:start *server*)
 ;;;---------------------------------------
 ;;; Standard display
 ;;;---------------------------------------
@@ -210,11 +206,19 @@
          (page-name (standard-page-name-displayer table))
          (frame-name "display-frame")
          (inputs (mapcar #'display-field (schema table))))
-    `((:iframe :name ,frame-name :width "600" :heigth "300" :src ,page-name)
-      (:form :action ,page-name :method "get" :target ,frame-name
-             ,@inputs
-             (:p (:input :type "submit" :value "Search")))
-      (:hr))))
+
+`((:div :id "section-standard-display"
+        (:div :class "container"
+          (:div :class "eight columns"
+              (:iframe :name ,frame-name :width "300" :heigth "300" :src ,page-name)
+          ) ; // div eight
+          (:div :class "eight columns"
+                (:form :action ,page-name :method "get" :target ,frame-name ,@inputs (:p (:input :type "submit" :value "Search")))
+          ) ; // div eight
+    ) ; // div container
+  ) ; // div display
+) ; // `
+))
 
 (defun standard-page-display-header (headers)
   `(:tr
@@ -230,48 +234,26 @@
 
 
 ;;;---------------------------------------
-;;; Standard remove
-;;;---------------------------------------
-(defun standard-page-remove-form (table)
-  (if (primary-key table)
-    (let ((field (remove-field table))
-          (page-name (standard-page-name-remover table)))
-      `((:h3 "Suppression")
-        (:form :action ,page-name :method "post"
-              ,field
-              (:p (:input :type "submit"
-                          :value "Remove")))
-        (:hr)))
-    `((:h3 "Suppression")
-      (:p "Suppression : not yet supported for table without a primary-key")
-      (:hr))))
-
-(defun remove-field (table)
-  (let* ((rows (select :columns (primary-key table) :from table :raw t :no-tag t))
-         (options (mapcar
-                   #'(lambda (row) `(:option :value ,(write-to-string row) ,(write-to-string row)))
-                   rows))
-         (name  (format nil "~(~a~)" (table-name table))))
-    `(:p "ID" (:br)
-         (:select :name ,name
-                  :required "0"
-                  (:option :value "" "Please select")
-                  ,@options))))
-
-
-;;;---------------------------------------
 ;;; Standard input
 ;;;---------------------------------------
 (defun standard-page-input-form (table)
   (let* ((prim-key (primary-key table))
          (inputs (mapcar #'input-field (remove-if #'(lambda (col) (eql prim-key (column-name col))) (schema table))))
          (page-name (standard-page-name-adder table)))
-    `((:h3 "Ajout")
+`(
+  (:div :id "section-standard-input"
+    (:div :class "container"
+      (:div :class "five columns"
+      (:h3 "Ajout")
       (:form :action ,page-name :method "post"
             ,@inputs
             (:p (:input :type "submit"
                         :value "Add")))
-      (:hr))))
+      ) ; // div five
+    ) ; // div container
+  ) ; // div input
+) ; // `
+))
 
 (defun input-field (column)
   (let ((name (symbol-name (column-name column)))
@@ -316,6 +298,55 @@
     (mapcar
       #'(lambda (row) `(:option :value ,(write-to-string (car row)) ,(cadr row)))
       rows)))
+
+;;;---------------------------------------
+;;; Standard remove
+;;;---------------------------------------
+(defun standard-page-remove-form (table)
+  (if (primary-key table)
+    (let ((field (remove-field table))
+          (page-name (standard-page-name-remover table)))
+`(
+  (:div :id "section-standard-remove"
+    (:div :class "container"
+      (:div :class "five columns"
+
+  (:h3 "Suppression")
+        (:form :action ,page-name :method "post"
+              ,field
+              (:p (:input :type "submit"
+                          :value "Remove")))
+      ) ; // div five
+    ) ; // div container
+  ) ; // div remove
+) ; // `
+)
+
+`(
+  (:div :id "section-standard-remove"
+    (:div :class "container"
+      (:div :class "five columns"
+
+      (:h3 "Suppression")
+      (:p "Suppression : not yet supported for table without a primary-key")
+
+      ) ; // div five
+    ) ; // div container
+  ) ; // div remove
+) ; // `
+))
+
+(defun remove-field (table)
+  (let* ((rows (select :columns (primary-key table) :from table :raw t :no-tag t))
+         (options (mapcar
+                   #'(lambda (row) `(:option :value ,(write-to-string row) ,(write-to-string row)))
+                   rows))
+         (name  (format nil "~(~a~)" (table-name table))))
+    `(:p "ID" (:br)
+         (:select :name ,name
+                  :required "0"
+                  (:option :value "" "Please select")
+                  ,@options))))
 
 
 ;;;---------------------------------------
