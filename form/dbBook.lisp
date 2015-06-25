@@ -5,7 +5,8 @@
 (use-package :com.monsterpidg.form)
 (use-package :com.monsterpidg.database)
 
-(defparameter *server* (make-instance 'easy-acceptor :port 8080))
+; l'ajout de ":document-root" permet au serveur de retrouver facilement images et css)
+(defparameter *server* (make-instance 'easy-acceptor :port 8080 :document-root #p "~/Documents/dbProject/"))
 
 ;;;---------------------------------------
 ;;; Database definition
